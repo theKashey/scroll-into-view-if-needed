@@ -1,10 +1,28 @@
 import compute from './compute'
-import {
-  ScrollBehavior,
-  CustomScrollBehaviorCallback,
-  CustomScrollAction,
-  Options as BaseOptions,
-} from './types'
+
+// Standard, based on CSSOM View spec
+export type ScrollBehavior = 'auto' | 'instant' | 'smooth'
+export type ScrollLogicalPosition = 'start' | 'center' | 'end' | 'nearest'
+// This new option is tracked in this PR, which is the most likely candidate at the time: https://github.com/w3c/csswg-drafts/pull/1805
+export type ScrollMode = 'always' | 'if-needed'
+
+export type CustomScrollBoundary = Element | CustomScrollBoundaryCallback
+export interface BaseOptions {
+  block?: ScrollLogicalPosition
+  inline?: ScrollLogicalPosition
+  scrollMode?: ScrollMode
+  boundary?: CustomScrollBoundary
+}
+
+// Custom behavior, not in any spec
+export interface CustomScrollBoundaryCallback {
+  (parent: Element): boolean
+}
+
+export type CustomScrollAction = { el: Element; top: number; left: number }
+export interface CustomScrollBehaviorCallback<T> {
+  (actions: CustomScrollAction[]): T
+}
 
 export interface StandardBehaviorOptions extends BaseOptions {
   behavior?: ScrollBehavior
@@ -13,7 +31,7 @@ export interface CustomBehaviorOptions<T> extends BaseOptions {
   behavior: CustomScrollBehaviorCallback<T>
 }
 
-export interface Options<T = any> {
+export interface Options<T = any> extends {
   behavior?: ScrollBehavior | CustomScrollBehaviorCallback<T>
 }
 
@@ -69,12 +87,12 @@ const getOptions = (options: any = true): StandardBehaviorOptions => {
 // Some people might use both "auto" and "ponyfill" modes in the same file, so we also provide a named export so
 // that imports in userland code (like if they use native smooth scrolling on some browsers, and the ponyfill for everything else)
 // the named export allows this `import {auto as autoScrollIntoView, ponyfill as smoothScrollIntoView} from ...`
-function scrollIntoView<T>(
+function scroll<T>(
   target: Element,
   options: CustomBehaviorOptions<T>
 ): T
-function scrollIntoView(target: Element, options?: Options | boolean): void
-function scrollIntoView<T>(target, options: Options<T> | boolean = true) {
+function scroll(target: Element, options?: Options | boolean): void
+function scroll<T>(target, options: Options<T> | boolean = true) {
   if (
     isOptionsObject<CustomBehaviorOptions<T>>(options) &&
     isFunction(options.behavior)
@@ -88,5 +106,8 @@ function scrollIntoView<T>(target, options: Options<T> | boolean = true) {
     computeOptions.behavior
   )
 }
+
+// re-assign here makes the flowtype generation work
+const scrollIntoView = scroll
 
 export default scrollIntoView

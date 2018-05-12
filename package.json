@@ -22,7 +22,10 @@
     "build": "yarn build:d.ts && yarn build:cjs && yarn build:es && yarn build:umd && yarn build:umd.min",
     "build:cjs": "BABEL_ENV=cjs babel src -d . --extensions '.ts'",
     "build:d.ts": "tsc --emitDeclarationOnly",
+    "postbuild:d.ts": "yarn build:flow",
     "build:es": "BABEL_ENV=es babel src -d es --extensions '.ts'",
+    "build:flow": "flowgen -o index.flow.js typings/index.d.ts && flowgen -o compute.flow.js typings/compute.d.ts && flowgen -o types.flow.js typings/types.d.ts",
+    "build:flow2": "flowgen -o index.flow.js typings/*.d.ts",
     "build:umd": "BABEL_ENV=umd NODE_ENV=development rollup -c -f umd -o umd/scroll-into-view-if-needed.js",
     "build:umd.min": "BABEL_ENV=umd NODE_ENV=production rollup -c -f umd -o umd/scroll-into-view-if-needed.min.js",
     "clean": "rimraf 'umd' 'es' 'typings'",
@@ -121,7 +124,6 @@
     ]
   },
   "prettier": {
-    "semi": false,
     "singleQuote": true,
     "trailingComma": "es5",
     "overrides": [
